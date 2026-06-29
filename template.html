@@ -148,6 +148,12 @@
   .mt-mons{display:flex;gap:4px;flex-wrap:wrap}
   .mt-mons img{width:38px;height:38px;object-fit:contain;background:var(--card2);border-radius:6px;cursor:pointer}
   .mt-mons img.self{box-shadow:0 0 0 2px var(--accent)}
+  .setbox{background:linear-gradient(180deg,#1d2742,#1a2238);border:1px solid #3b6cff55;border-radius:11px;padding:12px;margin:14px 0}
+  .seth{font-size:13px;font-weight:800;color:var(--accent);margin-bottom:7px}
+  .setline{font-size:12px;color:#cdd6ea;margin:5px 0}
+  .setline b{color:#fff}
+  .setline .pc{color:var(--muted);font-size:10.5px}
+  .setsrc{font-size:10px;color:var(--muted);margin-top:7px;text-align:right}
 
   /* tabla de tipos */
   .typechart{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px}
@@ -633,6 +639,16 @@ function openModal(slug,num){
   const chip=(t,v)=>`<span class="wb" style="background:${TYPE_COLORS[t]||'#666'}">${TYPE_ES[t]||t}<span class="mult">${multTxt(v)}</span></span>`;
   const row=(lbl,arr)=> arr.length?`<div class="mrow"><span class="mlbl">${lbl}</span><span class="mchips">${arr.map(([t,v])=>chip(t,v)).join('')}</span></div>`:'';
   // equipos top que usan este Pokémon
+  // set real del meta (Pikalytics)
+  const M=mon.meta;
+  const setBlock = M ? `<div class="setbox">
+      <div class="seth">⭐ Set más usado en el meta${M.usage!=null?` · uso ${M.usage}%`:''}</div>
+      <div class="setline"><b>Habilidad:</b> ${M.ability.n}${M.ability.p?` <span class="pc">${M.ability.p}%</span>`:''}</div>
+      <div class="setline"><b>Objeto:</b> ${M.items.map(x=>`${x.n} <span class="pc">${x.p}%</span>`).join(' · ')}</div>
+      <div class="setline"><b>Movimientos:</b> ${M.moves.map(x=>`${x.n} <span class="pc">${x.p}%</span>`).join(' · ')}</div>
+      ${M.spread?`<div class="setline"><b>Puntos (PS/At/Def/AtEsp/DefEsp/Vel):</b> ${M.spread}</div>`:''}
+      <div class="setline"><b>Compañeros:</b> ${M.mates.map(x=>`${x.n} <span class="pc">${x.p}%</span>`).join(' · ')}</div>
+      <div class="setsrc">Datos reales de uso · Pikalytics</div></div>` : '';
   const tw=(DATA.teamsDB||[]).filter(t=>t.mons.includes(slug));
   const spec=slug.split('-')[0];
   const teamsBlock = tw.length
@@ -649,6 +665,7 @@ function openModal(slug,num){
       <div><h3>${mon.name.replace(/-/g,' ')}</h3><div class="mnum">#${String(num).padStart(3,'0')}</div>
         <div class="badges">${badges}</div></div></div>
     ${meta?`<div class="note" style="margin:14px 0 0;background:linear-gradient(90deg,#ffcb0518,#ff8a0010);border-color:#ffcb0544;color:#ffe08a">${meta.tag} · ${meta.note}</div>`:''}
+    ${setBlock}
     <div class="abil">Habilidades: <b>${abilities}</b></div>
     ${rows}
     <div class="total"><span>Total base (BST)</span><b>${bst(mon)}</b></div>
@@ -914,17 +931,24 @@ function buildTeam(){
   const blindHTML = blind.length? blind.map(t=>`<span class="wktag" style="background:${TYPE_COLORS[t]}">${TYPE_ES[t]}</span>`).join(' ')
     : '<span style="color:#9be88a">Tu equipo puede golpear súper eficaz a todos los tipos. Cobertura completa.</span>';
 
-  const cards=team.map(m=>{ const sg=suggestSet(m); const cat=sg.phys?'phys':'spec';
-    const stab=m.types.map(t=>mv(t,cat)).join('');
-    const cov=coverageTypes(m).map(t=>mv(t,cat)).join('');
+  const cards=team.map(m=>{ const sg=suggestSet(m); const cat=sg.phys?'phys':'spec'; const M=m.meta;
+    let body;
+    if(M){ // set real del meta
+      body=`<div class="sug"><span class="k">⭐ Set real del meta${M.usage!=null?` · uso ${M.usage}%`:''}</span></div>
+        <div class="sug"><span class="k">Habilidad / Objeto</span>${M.ability.n} · ${M.items[0]?M.items[0].n:'—'}</div>
+        <div class="sug"><span class="k">Movimientos más usados</span>${M.moves.map(x=>`<span class="mvchip" style="background:${TYPE_COLORS[(DATA.moves[Object.keys(DATA.moves).find(k=>DATA.moves[k].n.toLowerCase()===x.n.toLowerCase())]||{}).t]||'#556'}">${x.n} <small>${x.p}%</small></span>`).join('')}</div>
+        ${M.spread?`<div class="sug"><span class="k">Puntos sugeridos (PS/At/Def/AtEsp/DefEsp/Vel)</span>${M.spread}</div>`:''}`;
+    } else { // heurística por stats/tipos
+      const stab=m.types.map(t=>mv(t,cat)).join(''); const cov=coverageTypes(m).map(t=>mv(t,cat)).join('');
+      body=`<div class="sug"><span class="k">Stat Points sugeridos (66 total)</span>${sg.ev}</div>
+        <div class="sug"><span class="k">Alineación (naturaleza)</span>${sg.nat}</div>
+        <div class="sug"><span class="k">Movimientos STAB</span>${stab||'—'}</div>
+        <div class="sug"><span class="k">Cobertura recomendada</span>${cov||'—'}</div>`;
+    }
     return `<div class="tbcard">
       <div class="thead"><img src="${m.img||PLACEHOLDER}" alt="">
-        <div><div class="tn">${cap(m.name)}</div><span class="role">${sg.role}</span></div></div>
-      <div class="sug"><span class="k">Stat Points sugeridos (66 total)</span>${sg.ev}</div>
-      <div class="sug"><span class="k">Alineación (naturaleza)</span>${sg.nat}</div>
-      <div class="sug"><span class="k">Movimientos STAB</span>${stab||'—'}</div>
-      <div class="sug"><span class="k">Cobertura recomendada</span>${cov||'—'}</div>
-    </div>`;}).join('');
+        <div><div class="tn">${cap(m.name)}</div><span class="role">${sg.role}${M?' · datos reales':''}</span></div></div>
+      ${body}</div>`;}).join('');
 
   res.className='ares show';
   res.innerHTML=`
