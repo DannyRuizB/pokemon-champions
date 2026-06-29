@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Champions Dex — Pokédex, analizador de equipos, calculadora de daño y tabla de tipos de Pokémon Champions. Gratis y sin conexión, en móvil y PC.">
 <meta name="author" content="Danny Ruiz (@DannyRuizB)">
+<meta property="og:title" content="Champions Dex · Pokémon Champions">
+<meta property="og:description" content="Pokédex, team builder, analizador, calculadora de daño y tabla de tipos de Pokémon Champions. Gratis y sin conexión.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0f1320">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Champions Dex · Pokémon Champions</title>
 <style>
   :root{
@@ -193,6 +200,28 @@
   .threat .ti b{color:#ff8b8b;text-transform:capitalize}
   .threat .ti .cnt{color:#9be88a}
 
+  /* team builder */
+  .tbinputs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:4px}
+  .tbinputs input{background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:10px 12px;border-radius:9px;font-size:14px;width:100%}
+  .tbinputs input:focus{outline:none;border-color:var(--accent2)}
+  .tbcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .tbcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px}
+  .tbcard .thead{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+  .tbcard img{width:64px;height:64px;object-fit:contain;flex:none}
+  .tbcard .tn{font-size:16px;font-weight:700;text-transform:capitalize}
+  .role{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:9px;margin-top:4px;
+    background:#3b6cff22;color:#9fb6ff;border:1px solid #3b6cff55}
+  .sug{font-size:12.5px;margin:9px 0;color:#cdd6ea}
+  .sug .k{color:var(--accent);font-weight:700;display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+  .mvchip{display:inline-block;font-size:11px;padding:3px 8px;border-radius:9px;margin:2px 3px 2px 0;color:#fff;font-weight:600}
+  .mvchip small{opacity:.8}
+  .tbteam{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:14px}
+  .tbteam h4{color:var(--accent);font-size:15px;margin-bottom:10px}
+  .wkrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+  .wktag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;color:#fff}
+  .wkn{font-size:11px;color:var(--muted);margin-left:3px}
+  .sev{color:#ff9b9b;font-weight:700}
+
   /* calculadora */
   .calc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
   .crow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}
@@ -322,6 +351,14 @@
     </div>
     <button class="analyze-btn" id="analyzeBtn">⚔️ Analizar y darme la estrategia</button>
     <div class="ares" id="aRes"></div>
+  </section>
+
+  <section>
+    <h2 class="h2"><span class="dot"></span>Team Builder · crea tu equipo</h2>
+    <div class="note">Mete tus Pokémon y te sugiero, para <b>este equipo concreto</b>: el <b>rol</b> de cada uno, un <b>reparto de EVs + naturaleza</b> de partida, sus <b>mejores movimientos STAB</b> y <b>tipos de cobertura</b>, además de las <b>debilidades compartidas</b> y <b>huecos</b> del equipo. Son sugerencias basadas en stats y tipos — confirma el set final (y que aprenda los movimientos) en <a href="https://www.pikalytics.com/" target="_blank" rel="noopener">Pikalytics</a> o <a href="https://calc.pokemonshowdown.com/" target="_blank" rel="noopener">Showdown</a>.</div>
+    <div class="tbinputs" id="tbInputs"></div>
+    <button class="analyze-btn" id="buildBtn">🛠️ Construir y optimizar mi equipo</button>
+    <div class="ares" id="tbRes"></div>
   </section>
 
   <section>
@@ -799,6 +836,83 @@ function analyze(){
 }
 document.getElementById('analyzeBtn').addEventListener('click',analyze);
 
+/* ---------- Team Builder ---------- */
+(function(){ const box=document.getElementById('tbInputs');
+  for(let i=0;i<6;i++){ const inp=document.createElement('input'); inp.type='text'; inp.setAttribute('list','monlist');
+    inp.placeholder=`Pokémon ${i+1}`; inp.autocomplete='off'; inp.className='tb'; box.appendChild(inp);} })();
+
+function suggestSet(m){
+  const s=m.stats, atk=s.attack, spa=s['special-attack'], spe=s.speed, bulk=s.hp+s.defense+s['special-defense'];
+  const phys=atk>=spa, off=Math.max(atk,spa), fast=spe>=95;
+  let role,ev,nat;
+  if(off>=100 && off>=bulk/3.2){
+    if(phys){ role='Atacante físico';
+      ev=fast?'252 Ataque · 252 Velocidad · 4 PS':'252 Ataque · 252 PS · 4 Velocidad';
+      nat=fast?'Alegre (+Vel · −At.Esp.)':'Firme (+Ataque · −At.Esp.)'; }
+    else { role='Atacante especial';
+      ev=fast?'252 At. Esp. · 252 Velocidad · 4 PS':'252 At. Esp. · 252 PS · 4 Velocidad';
+      nat=fast?'Tímida (+Vel · −Ataque)':'Modesta (+At.Esp. · −Ataque)'; }
+  } else { const pw=s.defense>=s['special-defense'];
+    role=pw?'Muro físico / soporte':'Muro especial / soporte';
+    ev=pw?'252 PS · 252 Defensa · 4 Def. Esp.':'252 PS · 252 Def. Esp. · 4 Defensa';
+    nat=pw?'Osada (+Defensa · −Ataque)':'Calmada (+Def.Esp. · −Ataque)'; }
+  return {role,ev,nat,phys};
+}
+function bestMoveOfType(type,cat){ let best=null,any=null;
+  for(const sl in DATA.moves){ const mv=DATA.moves[sl]; if(mv.t!==type) continue; if(cat&&mv.c!==cat) continue;
+    if(!any||mv.p>any.p) any=mv;                       // el más potente (puede ser exclusivo)
+    if(mv.p<=120 && (!best||mv.p>best.p)) best=mv; }    // tope: STAB realista y aprendible
+  return best||any; }
+function coverageTypes(m){
+  const stabHits=new Set(); TYPES18.forEach(d=>{ if(m.types.some(t=>typeEff(t,[d])>=2)) stabHits.add(d); });
+  return TYPES18.filter(t=>!m.types.includes(t)).map(t=>{ let add=0;
+    TYPES18.forEach(d=>{ if(!stabHits.has(d)&&typeEff(t,[d])>=2) add++; }); return {t,add}; })
+    .sort((a,b)=>b.add-a.add).slice(0,2).filter(c=>c.add>0).map(c=>c.t);
+}
+function mv(type,cat){ const x=bestMoveOfType(type,cat);
+  return x?`<span class="mvchip" style="background:${TYPE_COLORS[type]}">${x.n} <small>(${x.p}·${TYPE_ES[type]})</small></span>`:''; }
+
+function buildTeam(){
+  const team=[...document.querySelectorAll('input.tb')].map(i=>findMon(i.value)).filter(Boolean);
+  const res=document.getElementById('tbRes');
+  if(team.length<1){ res.className='ares show';
+    res.innerHTML='<div class="tbteam"><p style="color:var(--muted)">Mete al menos 1 Pokémon (elígelo de la lista).</p></div>'; return; }
+
+  // análisis de equipo
+  const weak=TYPES18.map(T=>({T,n:team.filter(m=>typeEff(T,m.types)>1).length})).filter(x=>x.n>=2).sort((a,b)=>b.n-a.n);
+  const blind=TYPES18.filter(d=>!team.some(m=>m.types.some(t=>typeEff(t,[d])>=2)));
+
+  const weakHTML = weak.length? weak.map(w=>`<span class="wktag" style="background:${TYPE_COLORS[w.T]}">${TYPE_ES[w.T]}</span><span class="wkn">${w.n} miembros${w.n>=3?' <span class="sev">¡ojo!</span>':''}</span>`).join(' &nbsp; ')
+    : '<span style="color:#9be88a">Ninguna debilidad compartida grave. ¡Buen reparto defensivo!</span>';
+  const blindHTML = blind.length? blind.map(t=>`<span class="wktag" style="background:${TYPE_COLORS[t]}">${TYPE_ES[t]}</span>`).join(' ')
+    : '<span style="color:#9be88a">Tu equipo puede golpear súper eficaz a todos los tipos. Cobertura completa.</span>';
+
+  const cards=team.map(m=>{ const sg=suggestSet(m); const cat=sg.phys?'phys':'spec';
+    const stab=m.types.map(t=>mv(t,cat)).join('');
+    const cov=coverageTypes(m).map(t=>mv(t,cat)).join('');
+    return `<div class="tbcard">
+      <div class="thead"><img src="${m.img||PLACEHOLDER}" alt="">
+        <div><div class="tn">${cap(m.name)}</div><span class="role">${sg.role}</span></div></div>
+      <div class="sug"><span class="k">EVs sugeridos</span>${sg.ev}</div>
+      <div class="sug"><span class="k">Naturaleza</span>${sg.nat}</div>
+      <div class="sug"><span class="k">Movimientos STAB</span>${stab||'—'}</div>
+      <div class="sug"><span class="k">Cobertura recomendada</span>${cov||'—'}</div>
+    </div>`;}).join('');
+
+  res.className='ares show';
+  res.innerHTML=`
+    <div class="tbteam"><h4>⚠️ Debilidades compartidas del equipo</h4>
+      <div class="wkrow">${weakHTML}</div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">Tipos a los que varios de tus Pokémon son débiles. Si alguno marca "¡ojo!", lleva un Pokémon que lo resista o que lo cubra.</p></div>
+    <div class="tbteam"><h4>🎯 Huecos de cobertura ofensiva</h4>
+      <div class="wkrow">${blindHTML}</div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">Tipos a los que ningún STAB de tu equipo pega súper eficaz. Considera un movimiento de cobertura para ellos.</p></div>
+    <div class="tbcards">${cards}</div>
+    <p class="calcnote">Sugerencias basadas en estadísticas base y tipos. Los EVs/naturalezas son un punto de partida típico y los movimientos los mejores de cada tipo en la base de datos — <b>verifica que tu Pokémon los aprenda</b> y ajusta el set final con datos de uso (Pikalytics / Showdown).</p>`;
+  res.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+document.getElementById('buildBtn').addEventListener('click',buildTeam);
+
 /* ---------- Tabla de tipos ---------- */
 (function(){
   const ABBR={normal:"NOR",fire:"FUE",water:"AGU",electric:"ELÉ",grass:"PLA",ice:"HIE",fighting:"LUC",
@@ -820,6 +934,11 @@ document.getElementById('analyzeBtn').addEventListener('click',analyze);
   h+='</tbody></table>';
   document.getElementById('typechart').innerHTML=h;
 })();
+
+/* ---------- PWA: instalar como app + offline ---------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
 </script>
 </body>
 </html>
