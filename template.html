@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Pokédex y mejores equipos de Pokémon Champions — funciona sin internet, en móvil, tablet y PC.">
+<title>Pokédex · Pokémon Champions</title>
+<style>
+  :root{
+    --bg:#0f1320; --bg2:#161c2e; --card:#1c2438; --card2:#222c44;
+    --line:#2c3650; --txt:#e8edf7; --muted:#94a0bd; --accent:#ffcb05; --accent2:#3b6cff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:linear-gradient(180deg,#0c1019,#0f1320 40%);color:var(--txt);line-height:1.5;min-height:100vh;
+    overflow-x:hidden}
+  a{color:var(--accent2)}
+  header.hero{
+    background:linear-gradient(120deg,#3b6cff22,#ffcb0511),radial-gradient(circle at 80% -20%,#3b6cff44,transparent 60%);
+    border-bottom:1px solid var(--line);padding:42px 20px 30px;text-align:center}
+  .logo{font-size:13px;letter-spacing:5px;color:var(--accent);font-weight:700;text-transform:uppercase}
+  h1{font-size:clamp(28px,7vw,46px);margin:6px 0 8px;
+    background:linear-gradient(90deg,#ffcb05,#fff,#3b6cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);max-width:720px;margin:0 auto;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+  section{margin:34px auto}
+  .h2{display:flex;align-items:center;gap:10px;font-size:clamp(19px,4.5vw,22px);margin:0 0 16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .h2 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex:none}
+
+  .note{background:#1c243880;border:1px solid var(--line);border-radius:10px;padding:11px 14px;color:var(--muted);font-size:13px;margin-bottom:18px}
+  .note b{color:var(--txt)}
+
+  /* beginner guide */
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 8px;overflow:hidden}
+  details.guide>summary{cursor:pointer;padding:16px 18px;font-size:clamp(15px,4vw,17px);font-weight:700;list-style:none;
+    display:flex;align-items:center;gap:10px;user-select:none}
+  details.guide>summary::-webkit-details-marker{display:none}
+  details.guide>summary::after{content:"▸";margin-left:auto;color:var(--muted);transition:transform .2s}
+  details.guide[open]>summary::after{transform:rotate(90deg)}
+  details.guide>summary .em{font-size:22px}
+  .guide-body{padding:4px 18px 20px;border-top:1px solid var(--line)}
+  .gcard{background:var(--card2);border-radius:10px;padding:13px 15px;margin:12px 0}
+  .gcard h4{color:var(--accent);font-size:14px;margin-bottom:5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .gcard p{font-size:13.5px;color:#cdd6ea;margin:5px 0}
+  .gcard p b{color:#fff}
+  .glos{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:10px}
+  .gterm{background:var(--card);border-radius:9px;padding:10px 12px;font-size:12.5px}
+  .gterm b{color:var(--accent);display:block;margin-bottom:3px}
+  .gterm span{color:var(--muted)}
+  .level{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px}
+  .lv-novato{background:#3fa12933;color:#7bdc63;border:1px solid #3fa12966}
+  .lv-pro{background:#3b6cff33;color:#9fb6ff;border:1px solid #3b6cff66}
+
+  /* Teams */
+  .teams{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+  .team{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;transition:transform .15s,border-color .15s}
+  .team:hover{transform:translateY(-3px);border-color:var(--accent2)}
+  .team .rank{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;
+    background:var(--accent);color:#1a1a1a;font-weight:800;font-size:14px;margin-right:8px;flex:none}
+  .team h3{font-size:17px;display:flex;align-items:center;margin-bottom:2px}
+  .team .arch{color:var(--accent);font-size:13px;font-weight:600}
+  .team .rec{color:var(--muted);font-size:12.5px;margin:4px 0 12px}
+  .roster{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .roster .mon{background:var(--card2);border-radius:9px;padding:5px 2px;text-align:center;cursor:pointer}
+  .roster .mon:active{transform:scale(.94)}
+  .roster img{width:100%;height:auto;aspect-ratio:1;object-fit:contain}
+  .roster .mn{font-size:9px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .team .tip{font-size:12px;color:#bcd0ff;background:#3b6cff14;border-left:3px solid var(--accent2);
+    padding:7px 10px;border-radius:0 8px 8px 0;margin:10px 0 0}
+
+  /* Controls */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+  #search{flex:1;min-width:180px;background:var(--card);border:1px solid var(--line);color:var(--txt);
+    padding:11px 14px;border-radius:10px;font-size:15px}
+  #search:focus{outline:none;border-color:var(--accent2)}
+  #sort{background:var(--card);border:1px solid var(--line);color:var(--txt);padding:11px 12px;border-radius:10px;font-size:14px;cursor:pointer}
+  .toggle{background:var(--card);border:1px solid var(--line);color:var(--txt);padding:11px 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+  .toggle.on{background:linear-gradient(90deg,#ffcb05,#ff8a00);color:#1a1a1a;border-color:transparent}
+  .count{color:var(--muted);font-size:13px}
+  .types{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+  .tchip{border:none;color:#fff;padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;
+    cursor:pointer;text-transform:capitalize;opacity:.45;transition:opacity .12s,transform .12s}
+  .tchip.on{opacity:1;transform:scale(1.06)}
+
+  /* Dex grid */
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(148px,1fr))}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;
+    position:relative;transition:transform .12s,border-color .12s;min-height:200px;cursor:pointer}
+  .pcard:hover{transform:translateY(-4px);border-color:var(--accent)}
+  .pcard:active{transform:scale(.97)}
+  .pcard .num{position:absolute;top:8px;right:11px;font-size:11px;color:var(--muted);font-weight:700}
+  .pcard .bst{position:absolute;top:8px;left:11px;font-size:10px;color:var(--muted);font-weight:700}
+  .pcard img{width:96px;height:96px;object-fit:contain;margin:4px auto}
+  .pcard .nm{font-weight:700;font-size:13.5px;text-transform:capitalize;margin:4px 0 8px;min-height:34px;display:flex;align-items:center;justify-content:center}
+  .metatag{display:inline-block;background:linear-gradient(90deg,#ffcb05,#ff8a00);color:#1a1a1a;
+    font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:10px;margin-bottom:6px}
+  .pcard.meta{border-color:#ffcb0588;box-shadow:0 0 0 1px #ffcb0533}
+  .badges{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+  .badge{font-size:10.5px;padding:3px 9px;border-radius:12px;color:#fff;font-weight:700;text-transform:capitalize}
+  .best{margin-top:8px;font-size:10.5px;color:var(--muted)}
+  .best b{color:var(--accent)}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:#060912cc;backdrop-filter:blur(3px);display:none;
+    align-items:center;justify-content:center;padding:14px;z-index:50;overflow-y:auto}
+  .overlay.show{display:flex}
+  .modal{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
+    border-radius:18px;max-width:440px;width:100%;padding:22px;position:relative;box-shadow:0 20px 60px #000a;
+    margin:auto}
+  .modal .x{position:absolute;top:10px;right:12px;background:#0006;border:none;color:#fff;font-size:22px;cursor:pointer;
+    line-height:1;width:34px;height:34px;border-radius:50%}
+  .modal .top{display:flex;gap:16px;align-items:center}
+  .modal img{width:110px;height:110px;object-fit:contain;flex:none}
+  .modal h3{font-size:22px;text-transform:capitalize;margin-bottom:4px}
+  .modal .mnum{color:var(--muted);font-size:13px}
+  .modal .badges{justify-content:flex-start;margin-top:8px}
+  .abil{color:var(--muted);font-size:13px;margin:14px 0 4px}
+  .abil b{color:var(--txt);text-transform:capitalize}
+  .stat{display:grid;grid-template-columns:84px 36px 1fr;align-items:center;gap:8px;margin:7px 0;font-size:12.5px}
+  .stat .lbl{color:var(--muted)}
+  .stat .val{font-weight:700;text-align:right}
+  .bar{height:9px;border-radius:6px;background:#121a2e;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:6px}
+  .stat.hi .val{color:var(--accent)}
+  .stathint{font-size:11px;color:var(--muted);margin:-2px 0 9px;grid-column:1/-1}
+  .total{display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:12px;padding-top:10px;font-size:14px}
+  .total b{color:var(--accent);font-size:16px}
+  .matchups{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .mrow{display:flex;align-items:flex-start;gap:8px;margin:8px 0;font-size:12px}
+  .mrow .mlbl{min-width:84px;color:var(--muted);padding-top:3px;flex:none}
+  .mchips{display:flex;flex-wrap:wrap;gap:5px}
+  .wb{font-size:10.5px;padding:3px 8px;border-radius:11px;color:#fff;font-weight:700;text-transform:capitalize}
+  .wb .mult{font-size:9px;opacity:.85;margin-left:3px}
+
+  /* tabla de tipos */
+  .typechart{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px}
+  .typechart table{border-collapse:collapse;font-size:11px}
+  .typechart td,.typechart th{width:30px;height:30px;text-align:center;border:1px solid #0c101955;padding:0}
+  .typechart .corner{background:var(--card);font-size:9px;color:var(--muted);min-width:64px;position:sticky;left:0;z-index:3}
+  .typechart thead th{color:#fff;font-weight:800;font-size:9px}
+  .typechart .rowh{color:#fff;font-weight:800;font-size:9.5px;text-align:right;padding-right:7px;min-width:64px;
+    position:sticky;left:0;z-index:2;text-transform:capitalize;white-space:nowrap}
+  .typechart .c2{background:#3fa12955;color:#bdf5ad;font-weight:800}
+  .typechart .ch{background:#e6282955;color:#ffb3b3;font-weight:800}
+  .typechart .c0{background:#1a1f30;color:#6b7796;font-weight:800}
+  .typechart .c1{background:#161c2e}
+  .tc-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .tc-legend span{display:inline-flex;align-items:center;gap:6px}
+  .tc-legend i{width:18px;height:18px;border-radius:4px;display:inline-block;font-style:normal;text-align:center;line-height:18px;font-size:10px;font-weight:800}
+
+  /* analizador de equipos */
+  .vs-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .tbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .tbox.mine{border-color:#3b6cff66}
+  .tbox.theirs{border-color:#e6282966}
+  .tbox h4{font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .tbox.mine h4{color:#9fb6ff}.tbox.theirs h4{color:#ff8b8b}
+  .tbox input{background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:8px 10px;border-radius:8px;font-size:13.5px;width:100%;margin-bottom:6px}
+  .tbox input:focus{outline:none;border-color:var(--accent2)}
+  .analyze-btn{display:block;width:100%;margin:16px 0 0;padding:13px;border:none;border-radius:11px;
+    background:linear-gradient(90deg,#3b6cff,#ffcb05);color:#0c1019;font-size:16px;font-weight:800;cursor:pointer}
+  .analyze-btn:active{transform:scale(.99)}
+  .ares{display:none;margin-top:18px}
+  .ares.show{display:block}
+  .abloc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:14px}
+  .abloc h4{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--accent)}
+  .pickrow{display:flex;flex-wrap:wrap;gap:10px}
+  .pick{background:var(--card2);border:1px solid var(--line);border-radius:11px;padding:8px 8px 6px;text-align:center;width:90px;position:relative}
+  .pick.lead{border-color:var(--accent);box-shadow:0 0 0 1px #ffcb0544}
+  .pick img{width:62px;height:62px;object-fit:contain}
+  .pick .pn{font-size:11px;text-transform:capitalize;color:#cdd6ea;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pick .badge2{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;
+    background:var(--accent);color:#1a1a1a;padding:2px 7px;border-radius:8px;white-space:nowrap}
+  .strat{font-size:13.5px;color:#dbe3f5;line-height:1.7}
+  .strat li{margin:7px 0;list-style:none;padding-left:24px;position:relative}
+  .strat li::before{content:"▸";position:absolute;left:6px;color:var(--accent2)}
+  .strat b{color:#fff}
+  .matrix{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .matrix table{border-collapse:collapse;min-width:100%;font-size:12px}
+  .matrix th,.matrix td{padding:6px;text-align:center;border:1px solid var(--line)}
+  .matrix th{color:var(--muted);font-weight:600;font-size:10.5px}
+  .matrix th.mh{text-align:right;text-transform:capitalize;white-space:nowrap;padding-right:9px;color:#9fb6ff}
+  .matrix thead th{text-transform:capitalize;color:#ff8b8b}
+  .mc{font-weight:800;border-radius:4px}
+  .mc-fav{background:#3fa12944;color:#9be88a}
+  .mc-neu{background:#7782a022;color:#aeb6cc}
+  .mc-bad{background:#e6282944;color:#ff9b9b}
+  .threat{display:flex;gap:10px;align-items:center;background:var(--card2);border-radius:10px;padding:10px;margin:8px 0}
+  .threat img{width:48px;height:48px;flex:none}
+  .threat .ti{font-size:12.5px;color:#cdd6ea}
+  .threat .ti b{color:#ff8b8b;text-transform:capitalize}
+  .threat .ti .cnt{color:#9be88a}
+
+  /* calculadora */
+  .calc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .crow{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:12px;color:var(--muted);font-weight:600}
+  .calc input[type=text],.calc input[type=number],.calc select{
+    background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:10px 12px;border-radius:9px;font-size:14px;width:100%}
+  .calc input:focus,.calc select:focus{outline:none;border-color:var(--accent2)}
+  .vs{font-weight:800;color:var(--accent);font-size:18px;padding-bottom:10px;text-align:center}
+  details.adv{margin-top:14px;border-top:1px solid var(--line);padding-top:6px}
+  details.adv summary{cursor:pointer;color:var(--accent2);font-size:13px;font-weight:600;padding:6px 0;list-style:none}
+  details.adv summary::-webkit-details-marker{display:none}
+  details.adv summary::before{content:"⚙️ ";}
+  .advgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+  .advcol{background:var(--card2);border-radius:10px;padding:12px}
+  .advcol h5{font-size:12px;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+  .mini{display:flex;flex-direction:column;gap:4px;margin-bottom:9px}
+  .mini label{font-size:11.5px;color:var(--muted)}
+  .chk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#cdd6ea;margin:7px 0}
+  .chk input{width:auto}
+  .result{margin-top:16px;background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:12px;padding:16px;display:none}
+  .result.show{display:block}
+  .result .head{font-size:14px;color:#cdd6ea;margin-bottom:10px}
+  .result .head b{color:#fff;text-transform:capitalize}
+  .dmgbig{font-size:clamp(20px,5vw,26px);font-weight:800}
+  .pct{color:var(--accent);font-weight:800}
+  .verdict{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:10px;font-weight:700;font-size:14px}
+  .v-ko{background:#e6282933;color:#ff8b8b;border:1px solid #e6282966}
+  .v-mid{background:#fac00022;color:#ffd34d;border:1px solid #fac00055}
+  .v-safe{background:#3fa12933;color:#7bdc63;border:1px solid #3fa12966}
+  .eff{font-size:13px;margin-top:8px;color:var(--muted)}
+  .rolls{font-size:10.5px;color:var(--muted);margin-top:10px;word-spacing:2px;line-height:1.7}
+  .calcnote{font-size:12px;color:var(--muted);margin-top:12px}
+
+  footer{border-top:1px solid var(--line);padding:26px 18px;text-align:center;color:var(--muted);font-size:12.5px;margin-top:40px}
+
+  @media(max-width:600px){
+    .wrap{padding:0 12px}
+    header.hero{padding:34px 16px 24px}
+    .controls{gap:8px}
+    #search{flex:1 1 100%}
+    #sort{flex:1}
+    .toggle{flex:none}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:9px}
+    .pcard{min-height:182px;padding:10px}
+    .pcard img{width:78px;height:78px}
+    .roster .mn{font-size:8px}
+    .modal{padding:18px}
+    .modal img{width:88px;height:88px}
+    .stat{grid-template-columns:72px 32px 1fr}
+    .mrow .mlbl{min-width:74px}
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="logo">Pokédex no oficial</div>
+  <h1>Pokémon Champions</h1>
+  <p class="sub">Pokédex visual del roster competitivo (Reg. M-B) y los mejores equipos del momento. Funciona sin conexión — toca cualquier Pokémon para ver sus datos.</p>
+</header>
+
+<div class="wrap">
+
+  <section style="margin-top:28px">
+    <details class="guide" open>
+      <summary><span class="em">🎓</span> ¿Nuevo en el juego? Empieza aquí <span class="level lv-novato">para novatos</span></summary>
+      <div class="guide-body">
+        <div class="gcard">
+          <h4>🎮 ¿Qué es Pokémon Champions?</h4>
+          <p>Es un juego centrado <b>solo en los combates competitivos</b> de Pokémon (sin aventura). Eliges un equipo de Pokémon y luchas contra otros jugadores. El formato estrella son los <b>combates dobles</b> (2 Pokémon tuyos contra 2 del rival a la vez), que es el estilo de los torneos oficiales (VGC).</p>
+        </div>
+        <div class="gcard">
+          <h4>🧩 Lo mínimo que tienes que saber</h4>
+          <p>• <b>Equipo:</b> eliges 6 Pokémon y en cada combate sacas 4. La combinación importa más que tener "los más fuertes".</p>
+          <p>• <b>Tipos:</b> cada Pokémon tiene 1 o 2 tipos (fuego, agua, planta...). Unos hacen más daño a otros (agua vence a fuego, fuego vence a planta...). Saber a qué es <b>débil</b> tu Pokémon es lo más importante al empezar — lo tienes en la ficha de cada uno.</p>
+          <p>• <b>Estadísticas (stats):</b> los números de cada Pokémon (PS = vida, Ataque, Defensa...). Dicen en qué es bueno. Ábrelos en la ficha y vienen explicados.</p>
+          <p>• <b>Meta:</b> los Pokémon y equipos que más se usan porque funcionan mejor ahora. Cambia cada temporada. Los marcados con <b style="color:var(--accent)">★</b> son los del meta actual.</p>
+        </div>
+        <div class="gcard">
+          <h4>🌦️ Las estrategias de los equipos, en sencillo</h4>
+          <p>• <b>Sol / Lluvia / Nieve:</b> un Pokémon cambia el clima y eso potencia a su equipo (el sol sube los ataques de fuego, la lluvia los de agua...).</p>
+          <p>• <b>Viento Afín (Tailwind):</b> durante 4 turnos todo tu equipo va el doble de rápido, así atacas antes que el rival.</p>
+          <p>• <b>Mega-evolución:</b> algunos Pokémon (★ MEGA) "megaevolucionan" en combate y se vuelven mucho más fuertes esa batalla.</p>
+        </div>
+        <div class="gcard">
+          <h4>📚 Glosario rápido <span class="level lv-pro">jerga que verás</span></h4>
+          <div class="glos">
+            <div class="gterm"><b>BST</b><span>Suma de todas las stats base. Orientativo del "poder bruto", NO de lo bueno que es en competitivo.</span></div>
+            <div class="gterm"><b>EVs / Naturaleza</b><span>Puntos y bonus que repartes para personalizar las stats. Definen el "set".</span></div>
+            <div class="gterm"><b>Set</b><span>La configuración: objeto + habilidad + 4 movimientos + EVs. Es lo que gana partidas.</span></div>
+            <div class="gterm"><b>Intimidación</b><span>Habilidad que baja el Ataque de los rivales al entrar. Por eso Incineroar se usa tantísimo.</span></div>
+            <div class="gterm"><b>Regulación</b><span>Las reglas vigentes (qué Pokémon son legales). Ahora: <b>M-B</b>. Cambia cada cierto tiempo.</span></div>
+            <div class="gterm"><b>Speed tier</b><span>El orden de velocidad. Usa el orden "Velocidad" de la Pokédex para verlo.</span></div>
+          </div>
+        </div>
+        <div class="gcard">
+          <h4>👉 ¿Cómo uso esta página?</h4>
+          <p><b>Si vas empezando:</b> activa el filtro <b>★ Solo meta</b>, mira esos Pokémon, toca su ficha para ver stats y debilidades, y copia uno de los 5 equipos de arriba para practicar.</p>
+          <p><b>Si ya controlas:</b> ordena por Velocidad/Ataque, filtra por tipo, y saca los sets/EVs exactos de los enlaces (Pikalytics, Pokémon Zone, ChampTeams) del aviso de la Pokédex.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2 class="h2"><span class="dot"></span>Top 5 equipos ahora mismo</h2>
+    <div class="note">Equipos reales con buenos resultados recientes en torneos VGC 2026 (Reg. M-B). Fuente: Pikalytics. Toca cualquier Pokémon para ver su ficha.</div>
+    <div class="teams" id="teams"></div>
+  </section>
+
+  <section>
+    <h2 class="h2"><span class="dot"></span>Analizador de equipos · ¿qué saco?</h2>
+    <div class="note">Mete tus 6 Pokémon y los 6 del rival y te digo <b>qué 4 sacar</b>, <b>con cuáles liderar</b> y la <b>estrategia</b>. El análisis se basa en <b>tipos, velocidad base y estadísticas</b> — no conoce los movimientos/objetos concretos del rival, así que es una guía muy fiable pero la decisión final es tuya.</div>
+    <div class="vs-wrap">
+      <div class="tbox mine">
+        <h4>🔵 Tu equipo</h4>
+        <div id="myTeam"></div>
+      </div>
+      <div class="tbox theirs">
+        <h4>🔴 Equipo rival</h4>
+        <div id="oppTeam"></div>
+      </div>
+    </div>
+    <button class="analyze-btn" id="analyzeBtn">⚔️ Analizar y darme la estrategia</button>
+    <div class="ares" id="aRes"></div>
+  </section>
+
+  <section>
+    <h2 class="h2"><span class="dot"></span>Calculadora de daño</h2>
+    <div class="note">Elige <b>atacante</b>, su <b>movimiento</b> y el <b>defensor</b> y te dice cuánto daño hace y si lo debilita. Por defecto: nivel 50 (formato torneo), atacante con 252 EVs + naturaleza favorable y defensor sin EVs. Ajusta todo en <b>⚙️ Opciones avanzadas</b>. Para números 100% exactos antes de un torneo, contrasta con la <a href="https://calc.pokemonshowdown.com/" target="_blank" rel="noopener">calculadora oficial de Pokémon Showdown</a>.</div>
+    <div class="calc">
+      <div class="crow">
+        <div class="fld"><label>⚔️ Atacante</label><input id="cAtk" type="text" list="monlist" placeholder="Ej: Garchomp" autocomplete="off"></div>
+        <div class="vs">VS</div>
+        <div class="fld"><label>🛡️ Defensor</label><input id="cDef" type="text" list="monlist" placeholder="Ej: Incineroar" autocomplete="off"></div>
+      </div>
+      <div class="fld" style="margin-top:12px"><label>💥 Movimiento</label><input id="cMove" type="text" list="movelist" placeholder="Ej: Terremoto" autocomplete="off"></div>
+
+      <details class="adv">
+        <summary>Opciones avanzadas (EVs, naturaleza, objeto, clima...)</summary>
+        <div class="advgrid">
+          <div class="advcol">
+            <h5>⚔️ Atacante</h5>
+            <div class="mini"><label>EVs en el ataque (0-252)</label><input id="aEV" type="number" min="0" max="252" value="252"></div>
+            <div class="mini"><label>Naturaleza</label>
+              <select id="aNat"><option value="1.1">Favorable (+10%)</option><option value="1">Neutra</option><option value="0.9">Desfavorable (−10%)</option></select></div>
+            <div class="mini"><label>Objeto</label>
+              <select id="aItem"><option value="1">Ninguno</option><option value="1.3">Vidasfera (×1,3)</option><option value="1.5">Banda/Gafas elección (×1,5)</option></select></div>
+            <div class="chk"><input id="aCrit" type="checkbox"><label>Golpe crítico (×1,5)</label></div>
+            <div class="chk"><input id="aBurn" type="checkbox"><label>Atacante quemado (físico ×0,5)</label></div>
+          </div>
+          <div class="advcol">
+            <h5>🛡️ Defensor</h5>
+            <div class="mini"><label>EVs en PS (0-252)</label><input id="dHP" type="number" min="0" max="252" value="0"></div>
+            <div class="mini"><label>EVs en la defensa (0-252)</label><input id="dEV" type="number" min="0" max="252" value="0"></div>
+            <div class="mini"><label>Naturaleza defensiva</label>
+              <select id="dNat"><option value="1">Neutra</option><option value="1.1">Favorable (+10%)</option><option value="0.9">Desfavorable (−10%)</option></select></div>
+          </div>
+          <div class="advcol">
+            <h5>🌦️ Condiciones</h5>
+            <div class="mini"><label>Clima</label>
+              <select id="cWeather"><option value="none">Ninguno</option><option value="sun">Sol</option><option value="rain">Lluvia</option></select></div>
+            <div class="chk"><input id="cSpread" type="checkbox"><label>Combate doble: ataque en área (×0,75)</label></div>
+          </div>
+          <div class="advcol">
+            <h5>📏 Nivel</h5>
+            <div class="mini"><label>Nivel</label><input id="cLevel" type="number" min="1" max="100" value="50"></div>
+            <p style="font-size:11px;color:var(--muted)">Los torneos VGC usan nivel 50.</p>
+          </div>
+        </div>
+      </details>
+
+      <div class="result" id="cResult"></div>
+      <div class="calcnote" id="cHint">👆 Escribe atacante, defensor y movimiento para calcular.</div>
+    </div>
+  </section>
+
+  <datalist id="monlist"></datalist>
+  <datalist id="movelist"></datalist>
+
+  <section>
+    <h2 class="h2"><span class="dot"></span>Tabla de tipos</h2>
+    <div class="note">Cómo se lee: busca el tipo de <b>tu ataque</b> en la <b>fila</b> de la izquierda y el tipo del <b>defensor</b> en la <b>columna</b> de arriba. El cruce te dice el daño: <b style="color:#9be88a">2</b> = súper eficaz (doble daño), <b style="color:#ffb3b3">½</b> = poco eficaz (mitad), <b style="color:#9aa6c4">0</b> = no afecta. Casilla vacía = daño normal.</div>
+    <div class="typechart" id="typechart"></div>
+    <div class="tc-legend">
+      <span><i class="c2" style="background:#3fa12955;color:#bdf5ad">2</i> Súper eficaz (×2)</span>
+      <span><i class="ch" style="background:#e6282955;color:#ffb3b3">½</i> Poco eficaz (×0,5)</span>
+      <span><i class="c0" style="background:#1a1f30;color:#6b7796">0</i> No afecta</span>
+      <span><i style="background:#161c2e">·</i> Daño normal (×1)</span>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h2"><span class="dot"></span>Pokédex del roster</h2>
+    <div class="note">⚠️ <b>Para competitivo:</b> las stats base son solo el potencial bruto — no son la tier list. Lo que gana partidas son los <b>sets</b> (objeto, habilidad, movimientos, EVs y naturaleza), el <b>uso real</b> y la <b>regulación</b>, y eso cambia cada temporada. Usa esta Pokédex para conocer stats y candidatos; saca los sets actualizados de
+      <a href="https://www.pikalytics.com/" target="_blank" rel="noopener">Pikalytics</a>,
+      <a href="https://www.pokemon-zone.com/champions/" target="_blank" rel="noopener">Pokémon Zone</a> o
+      <a href="https://champteams.gg/browse" target="_blank" rel="noopener">ChampTeams</a>. Los <b style="color:var(--accent)">★</b> son los dominantes del meta actual.</div>
+    <div class="controls">
+      <input id="search" type="text" placeholder="🔍 Buscar Pokémon por nombre...">
+      <select id="sort">
+        <option value="dex">Orden: Pokédex</option>
+        <option value="bst">Orden: BST (mayor)</option>
+        <option value="speed">Orden: Velocidad</option>
+        <option value="attack">Orden: Ataque</option>
+        <option value="special-attack">Orden: At. Especial</option>
+        <option value="defense">Orden: Defensa</option>
+        <option value="special-defense">Orden: Def. Especial</option>
+        <option value="hp">Orden: PS</option>
+      </select>
+      <button id="metaOnly" class="toggle">★ Solo meta</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="types" id="typeFilters"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<footer>
+  Página local hecha con datos públicos · Roster: Game8 · Equipos: Pikalytics · Datos e imágenes: PokéAPI<br>
+  Funciona sin conexión · Pokémon © Nintendo / Game Freak / The Pokémon Company. Proyecto fan sin ánimo de lucro.
+</footer>
+
+<script>
+const DATA = __DATA__;
+
+/* equipos top (datos reales, Pikalytics) */
+const TEAMS = [
+  {name:"burningblazer", arch:"Sol (Sun Offense)", rec:"14-2 · Smogon VGC Major Live 2026",
+   tip:"Mega-Charizard Y pone sol y dispara fuego potenciadísimo; el resto remata rápido. El arquetipo más fuerte ahora mismo (74% de victorias).",
+   mons:["floette-eternal","charizard-mega-y","kingambit","whimsicott","basculegion-male","garchomp"]},
+  {name:"DaniVGC03", arch:"Lluvia (Rain)", rec:"13-1 · Maddo's Cup #9",
+   tip:"Pelipper trae lluvia y Swampert/Archaludon pegan mucho más fuerte con agua mientras controlan el campo.",
+   mons:["swampert-mega","pelipper","archaludon","sinistcha","maushold-family-of-four","gholdengo"]},
+  {name:"ege", arch:"Nieve (Snow)", rec:"9-0 · Palafin Pals Jet Punch Series",
+   tip:"La nieve sube la Defensa de los tipo Hielo; equipo agresivo y rápido que aprovecha el clima.",
+   mons:["froslass-mega","scovillain-mega","lycanroc-midday","kingambit","basculegion-male","sneasler"]},
+  {name:"DonVGC", arch:"Viento Afín (Tailwind)", rec:"7-0 · INGAGE Frontier Series #2",
+   tip:"Dobla la velocidad de todo el equipo durante 4 turnos para atacar siempre primero. Muy bueno para empezar.",
+   mons:["basculegion-male","aerodactyl","sinistcha","kangaskhan-mega","floette-eternal","incineroar"]},
+  {name:"MysticRy", arch:"Híbrido Nieve / Tailwind", rec:"10-1 · Talon's Fight Club #89",
+   tip:"Mezcla nieve y viento afín para controlar el ritmo y golpear primero con presión constante.",
+   mons:["froslass-mega","kingambit","primarina","sneasler","arcanine-hisui","pelipper"]}
+];
+
+/* Pokémon dominantes del meta (datos de uso reales, Reg. M-B) */
+const META = {
+  incineroar:{tag:"★ TOP META", note:"El más usado: 62,4% de los equipos. Intimidación + Finta + Voltiocambio."},
+  kingambit:{tag:"★ TOP META", note:"Top 3 en uso. Limpiador con Acero Afilado / Estoque."},
+  garchomp:{tag:"★ TOP META", note:"Top 3 en uso y dominante también en Singles."},
+  hippowdon:{tag:"★ TOP SINGLES", note:"Lidera el meta de Singles junto a Garchomp."},
+  archaludon:{tag:"★ TOP SINGLES", note:"De los mejores en Singles ahora mismo."},
+  metagross:{tag:"★ MEGA TOP", note:"Mega-Metagross: de las mejores Megas del meta."},
+  mawile:{tag:"★ MEGA TOP", note:"Mega-Mawile: de las mejores Megas del meta."},
+  gengar:{tag:"★ MEGA TOP", note:"Mega-Gengar: de las mejores Megas del meta."},
+  blaziken:{tag:"★ MEGA TOP", note:"Mega-Blaziken: de las mejores Megas del meta."}
+};
+
+const TYPE_COLORS = {normal:"#9fa19f",fire:"#e62829",water:"#2980ef",electric:"#fac000",grass:"#3fa129",
+  ice:"#3dcef3",fighting:"#ff8000",poison:"#9141cb",ground:"#915121",flying:"#81b9ef",psychic:"#ef4179",
+  bug:"#91a119",rock:"#afa981",ghost:"#704170",dragon:"#5060e1",dark:"#50413f",steel:"#60a1b8",fairy:"#ef70ef"};
+const TYPE_ES = {normal:"normal",fire:"fuego",water:"agua",electric:"eléctrico",grass:"planta",ice:"hielo",
+  fighting:"lucha",poison:"veneno",ground:"tierra",flying:"volador",psychic:"psíquico",bug:"bicho",
+  rock:"roca",ghost:"fantasma",dragon:"dragón",dark:"siniestro",steel:"acero",fairy:"hada"};
+const STAT_ORDER = ["hp","attack","defense","special-attack","special-defense","speed"];
+const STAT_ES = {hp:"PS",attack:"Ataque",defense:"Defensa","special-attack":"At. Esp.","special-defense":"Def. Esp.",speed:"Velocidad"};
+const STAT_DESC = {
+  hp:"Puntos de salud: cuánto daño aguanta antes de debilitarse.",
+  attack:"Fuerza de sus ataques físicos (golpes, mordiscos...).",
+  defense:"Cuánto resiste los ataques físicos del rival.",
+  "special-attack":"Fuerza de sus ataques especiales (rayos, llamas...).",
+  "special-defense":"Cuánto resiste los ataques especiales del rival.",
+  speed:"Quién ataca primero. Clave: el más rápido golpea antes."
+};
+const TYPES18 = Object.keys(TYPE_ES);
+const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Ccircle cx='48' cy='48' r='40' fill='none' stroke='%23445' stroke-width='6'/%3E%3Ctext x='48' y='60' font-size='40' text-anchor='middle' fill='%23667'%3E?%3C/text%3E%3C/svg%3E";
+
+function statList(mon){ return STAT_ORDER.map(k=>({name:k, v:mon.stats[k]??0})); }
+function bst(mon){ return statList(mon).reduce((a,s)=>a+s.v,0); }
+function statColor(v){ return v>=120?"#3fa129": v>=90?"#7bc043": v>=60?"#fac000": v>=40?"#ff8000":"#e62829"; }
+function multTxt(v){ return v===0.25?"¼×":v===0.5?"½×":v===2?"2×":v===4?"4×":v+"×"; }
+function matchups(types){
+  const m={};
+  TYPES18.forEach(atk=>{ m[atk]=types.reduce((acc,def)=> acc*((DATA.chart[def]&&DATA.chart[def][atk]!=null)?DATA.chart[def][atk]:1),1); });
+  const weak=[],res=[],imm=[];
+  TYPES18.forEach(atk=>{ const v=m[atk];
+    if(v===0) imm.push([atk,v]); else if(v>1) weak.push([atk,v]); else if(v<1) res.push([atk,v]); });
+  weak.sort((a,b)=>b[1]-a[1]); res.sort((a,b)=>a[1]-b[1]);
+  return {weak,res,imm};
+}
+
+/* ---------- Pokédex ---------- */
+const grid=document.getElementById('grid');
+const allCards=[];
+const roster=DATA.roster.filter(d=>DATA.pokemon[d.slug]); // solo los que tienen datos
+roster.forEach((d,i)=>{
+  const mon=DATA.pokemon[d.slug];
+  d.mon=mon; d.dex=i+1; d.types=mon.types;
+  const bs=statList(mon).reduce((a,b)=>b.v>a.v?b:a);
+  const meta=META[d.slug];
+  const badges=mon.types.map(t=>`<span class="badge" style="background:${TYPE_COLORS[t]||'#666'}">${TYPE_ES[t]||t}</span>`).join('');
+  const c=document.createElement('div');
+  c.className='pcard'+(meta?' meta':'');
+  c.innerHTML=`<span class="bst">BST ${bst(mon)}</span><span class="num">#${String(i+1).padStart(3,'0')}</span>
+    <img src="${mon.img||PLACEHOLDER}" alt="${d.name}" loading="lazy">
+    <div class="nm">${d.name}</div>
+    ${meta?`<div class="metatag">${meta.tag}</div>`:''}
+    <div class="badges">${badges}</div>
+    <div class="best">Mejor: <b>${STAT_ES[bs.name]} ${bs.v}</b></div>`;
+  c.onclick=()=>openModal(d.slug,i+1);
+  d._c=c; grid.appendChild(c); allCards.push(d);
+});
+document.getElementById('count').textContent=`${roster.length} Pokémon`;
+
+/* filtros tipo */
+const foundTypes=new Set(); roster.forEach(d=>d.types.forEach(t=>foundTypes.add(t)));
+const tbox=document.getElementById('typeFilters');
+let activeTypes=new Set();
+[...foundTypes].sort().forEach(t=>{
+  const b=document.createElement('button'); b.className='tchip'; b.textContent=TYPE_ES[t]||t;
+  b.style.background=TYPE_COLORS[t]||'#666';
+  b.onclick=()=>{ activeTypes.has(t)?(activeTypes.delete(t),b.classList.remove('on')):(activeTypes.add(t),b.classList.add('on')); apply(); };
+  tbox.appendChild(b);
+});
+
+/* búsqueda / orden / meta */
+const search=document.getElementById('search');
+const sortSel=document.getElementById('sort');
+const metaBtn=document.getElementById('metaOnly');
+let metaOnly=false;
+function statOf(d,name){ return name==='bst'?bst(d.mon):(d.mon.stats[name]??-1); }
+function apply(){
+  const q=search.value.trim().toLowerCase(); let shown=0;
+  allCards.forEach(d=>{
+    const okName=!q||d.name.toLowerCase().includes(q);
+    const okType=activeTypes.size===0||d.types.some(t=>activeTypes.has(t));
+    const okMeta=!metaOnly||!!META[d.slug];
+    const vis=okName&&okType&&okMeta; d._c.style.display=vis?'':'none'; if(vis)shown++;
+  });
+  document.getElementById('count').textContent=`${shown} / ${roster.length} Pokémon`;
+}
+function sortGrid(){
+  const mode=sortSel.value; const order=[...allCards];
+  order.sort((a,b)=> mode==='dex' ? a.dex-b.dex : statOf(b,mode)-statOf(a,mode));
+  order.forEach(d=>grid.appendChild(d._c));
+}
+search.addEventListener('input',apply);
+sortSel.addEventListener('change',sortGrid);
+metaBtn.addEventListener('click',()=>{ metaOnly=!metaOnly; metaBtn.classList.toggle('on',metaOnly); apply(); });
+
+/* ---------- Equipos ---------- */
+const teamsBox=document.getElementById('teams');
+TEAMS.forEach((t,i)=>{
+  const el=document.createElement('div'); el.className='team';
+  el.innerHTML=`<h3><span class="rank">${i+1}</span>${t.name}</h3>
+    <div class="arch">${t.arch}</div><div class="rec">${t.rec}</div>
+    <div class="roster">${t.mons.map(m=>{ const mon=DATA.pokemon[m];
+      return `<div class="mon" data-slug="${m}">
+        <img src="${mon?mon.img:PLACEHOLDER}" alt="${m}" loading="lazy">
+        <span class="mn">${(mon?mon.name:m).replace(/-/g,' ')}</span></div>`;}).join('')}</div>
+    <div class="tip">💡 ${t.tip}</div>`;
+  el.querySelectorAll('.mon').forEach(node=>{
+    const s=node.dataset.slug; if(DATA.pokemon[s]) node.onclick=()=>openModal(s,DATA.pokemon[s].id);
+  });
+  teamsBox.appendChild(el);
+});
+
+/* ---------- Modal ---------- */
+const overlay=document.getElementById('overlay'), modal=document.getElementById('modal');
+function openModal(slug,num){
+  const mon=DATA.pokemon[slug]; if(!mon) return;
+  const meta=META[slug];
+  const badges=mon.types.map(t=>`<span class="badge" style="background:${TYPE_COLORS[t]||'#666'}">${TYPE_ES[t]||t}</span>`).join('');
+  const abilities=mon.abilities.map(a=>a.replace(/-/g,' ')).join(', ');
+  const list=statList(mon), best=Math.max(...list.map(s=>s.v));
+  const rows=list.map(s=>{ const hi=s.v===best?' hi':'';
+    return `<div class="stat${hi}"><span class="lbl">${STAT_ES[s.name]}</span><span class="val">${s.v}</span>
+      <span class="bar"><i style="width:${Math.min(100,s.v/255*100)}%;background:${statColor(s.v)}"></i></span>
+      <span class="stathint">${STAT_DESC[s.name]}</span></div>`; }).join('');
+  const mu=matchups(mon.types);
+  const chip=(t,v)=>`<span class="wb" style="background:${TYPE_COLORS[t]||'#666'}">${TYPE_ES[t]||t}<span class="mult">${multTxt(v)}</span></span>`;
+  const row=(lbl,arr)=> arr.length?`<div class="mrow"><span class="mlbl">${lbl}</span><span class="mchips">${arr.map(([t,v])=>chip(t,v)).join('')}</span></div>`:'';
+  modal.innerHTML=`<button class="x" onclick="closeModal()">×</button>
+    <div class="top"><img src="${mon.img||PLACEHOLDER}" alt="${mon.name}">
+      <div><h3>${mon.name.replace(/-/g,' ')}</h3><div class="mnum">#${String(num).padStart(3,'0')}</div>
+        <div class="badges">${badges}</div></div></div>
+    ${meta?`<div class="note" style="margin:14px 0 0;background:linear-gradient(90deg,#ffcb0518,#ff8a0010);border-color:#ffcb0544;color:#ffe08a">${meta.tag} · ${meta.note}</div>`:''}
+    <div class="abil">Habilidades: <b>${abilities}</b></div>
+    ${rows}
+    <div class="total"><span>Total base (BST)</span><b>${bst(mon)}</b></div>
+    <div class="matchups">${row('🔴 Débil a',mu.weak)}${row('🟢 Resiste',mu.res)}${row('⚪ Inmune a',mu.imm)}</div>`;
+  overlay.classList.add('show'); document.body.style.overflow='hidden';
+}
+function closeModal(){ overlay.classList.remove('show'); document.body.style.overflow=''; }
+overlay.addEventListener('click',e=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ---------- Calculadora de daño ---------- */
+// datalists + lookups
+const monByName={}; // nombre minúsculas -> slug
+DATA.roster.forEach(d=>{ if(DATA.pokemon[d.slug]) monByName[d.name.toLowerCase()]=d.slug; });
+Object.entries(DATA.pokemon).forEach(([slug,p])=>{ const k=p.name.replace(/-/g,' ').toLowerCase(); if(!monByName[k]) monByName[k]=slug; });
+const monDL=document.getElementById('monlist');
+[...new Set(Object.keys(monByName))].sort().forEach(n=>{ const o=document.createElement('option'); o.value=n.replace(/\b\w/g,c=>c.toUpperCase()); monDL.appendChild(o); });
+
+const moveByName={}; // nombre minúsculas -> slug
+Object.entries(DATA.moves||{}).forEach(([slug,m])=>{ moveByName[m.n.toLowerCase()]=slug; });
+const moveDL=document.getElementById('movelist');
+Object.entries(DATA.moves||{}).sort((a,b)=>a[1].n.localeCompare(b[1].n)).forEach(([slug,m])=>{
+  const o=document.createElement('option'); o.value=m.n;
+  o.label=`${m.p} pot · ${TYPE_ES[m.t]||m.t} · ${m.c==='phys'?'Físico':'Especial'}`;
+  moveDL.appendChild(o);
+});
+
+function findMon(v){ if(!v) return null; const s=monByName[v.trim().toLowerCase()]; return s?DATA.pokemon[s]:null; }
+function findMove(v){ if(!v) return null; return DATA.moves[moveByName[v.trim().toLowerCase()]]||null; }
+function calcStat(base,ev,level,nat,isHP){
+  ev=Math.max(0,Math.min(252,ev||0));
+  if(isHP) return Math.floor((2*base+31+Math.floor(ev/4))*level/100)+level+10;
+  return Math.floor((Math.floor((2*base+31+Math.floor(ev/4))*level/100)+5)*nat);
+}
+function pokeRound(x){ const f=x-Math.floor(x); return f>0.5?Math.ceil(x):Math.floor(x); }
+function typeEff(moveType,defTypes){
+  return defTypes.reduce((acc,dt)=>{ const row=DATA.chart[dt]; return acc*((row&&row[moveType]!=null)?row[moveType]:1); },1);
+}
+
+function calc(){
+  const atk=findMon(document.getElementById('cAtk').value);
+  const def=findMon(document.getElementById('cDef').value);
+  const move=findMove(document.getElementById('cMove').value);
+  const res=document.getElementById('cResult'), hint=document.getElementById('cHint');
+  if(!atk||!def||!move){ res.classList.remove('show');
+    hint.textContent=(document.getElementById('cAtk').value||document.getElementById('cDef').value||document.getElementById('cMove').value)
+      ? '⚠️ Revisa los nombres: elige atacante, defensor y movimiento de las listas.' : '👆 Escribe atacante, defensor y movimiento para calcular.';
+    return; }
+  hint.textContent='';
+  const level=Math.max(1,Math.min(100,+document.getElementById('cLevel').value||50));
+  const phys=move.c==='phys';
+  const aStatBase=phys?atk.stats.attack:atk.stats['special-attack'];
+  const dStatBase=phys?def.stats.defense:def.stats['special-defense'];
+  const A=calcStat(aStatBase,+document.getElementById('aEV').value,level,+document.getElementById('aNat').value,false);
+  const D=calcStat(dStatBase,+document.getElementById('dEV').value,level,+document.getElementById('dNat').value,false);
+  const HP=calcStat(def.stats.hp,+document.getElementById('dHP').value,level,1,true);
+
+  const eff=typeEff(move.t,def.types);
+  const stab=atk.types.includes(move.t)?1.5:1;
+  let weather=1; const w=document.getElementById('cWeather').value;
+  if(w==='sun') weather=move.t==='fire'?1.5:(move.t==='water'?0.5:1);
+  if(w==='rain') weather=move.t==='water'?1.5:(move.t==='fire'?0.5:1);
+  const crit=document.getElementById('aCrit').checked?1.5:1;
+  const burn=(document.getElementById('aBurn').checked&&phys)?0.5:1;
+  const item=+document.getElementById('aItem').value;
+  const spread=document.getElementById('cSpread').checked?0.75:1;
+
+  // fórmula daño (Gen 9)
+  const lf=Math.floor(2*level/5)+2;
+  let base=Math.floor(Math.floor(lf*move.p*A/D)/50)+2;
+  if(spread!==1) base=pokeRound(base*spread);
+  if(weather!==1) base=pokeRound(base*weather);
+  if(crit!==1) base=pokeRound(base*crit);
+  const rolls=[];
+  for(let r=85;r<=100;r++){
+    let d=Math.floor(base*r/100);
+    if(stab!==1) d=pokeRound(d*stab);
+    d=Math.floor(d*eff);
+    if(burn!==1) d=pokeRound(d*burn);
+    if(item!==1) d=pokeRound(d*item);
+    rolls.push(eff===0?0:Math.max(1,d));
+  }
+  const min=rolls[0], max=rolls[rolls.length-1];
+  const pmin=(min/HP*100), pmax=(max/HP*100);
+
+  // veredicto KO
+  let verdict, cls;
+  if(eff===0){ verdict='No afecta (inmune)'; cls='v-safe'; }
+  else if(min>=HP){ verdict='OHKO garantizado (1 golpe)'; cls='v-ko'; }
+  else {
+    const koCount=rolls.filter(d=>d>=HP).length;
+    if(koCount>0){ verdict=`Posible OHKO · ${koCount}/16 tiradas lo tumban`; cls='v-mid'; }
+    else {
+      const guaranteed=Math.ceil(HP/min), best=Math.ceil(HP/max);
+      verdict = guaranteed===best ? `${guaranteed}HKO garantizado (${guaranteed} golpes)`
+              : `Tumba en ${best}–${guaranteed} golpes`;
+      cls = guaranteed<=2?'v-mid':'v-safe';
+    }
+  }
+  const effTxt = eff===0?'Sin efecto':eff>1?`Súper eficaz (×${eff})`:eff<1?`Poco eficaz (×${eff})`:'Daño neutro (×1)';
+
+  res.className='result show';
+  res.innerHTML=`<div class="head"><b>${atk.name.replace(/-/g,' ')}</b> usa <b>${move.n}</b> contra <b>${def.name.replace(/-/g,' ')}</b></div>
+    <div class="dmgbig">${min} – ${max} de daño <span class="pct">(${pmin.toFixed(1)}% – ${pmax.toFixed(1)}%)</span></div>
+    <div class="eff">${effTxt}${stab>1?' · STAB ×1,5':''}${weather!==1?` · clima ×${weather}`:''} · PS del defensor: ${HP}</div>
+    <div class="verdict ${cls}">${verdict}</div>
+    <div class="rolls"><b>16 tiradas posibles:</b> ${rolls.join(' · ')}</div>`;
+}
+['cAtk','cDef','cMove','aEV','aNat','aItem','aCrit','aBurn','dHP','dEV','dNat','cWeather','cSpread','cLevel']
+  .forEach(id=>{ const el=document.getElementById(id); el.addEventListener('input',calc); el.addEventListener('change',calc); });
+
+/* ---------- Analizador de equipos ---------- */
+function makeInputs(box,cls){ for(let i=0;i<6;i++){ const inp=document.createElement('input');
+  inp.type='text'; inp.setAttribute('list','monlist'); inp.placeholder=`Pokémon ${i+1}`; inp.autocomplete='off';
+  inp.className=cls; box.appendChild(inp); } }
+makeInputs(document.getElementById('myTeam'),'my');
+makeInputs(document.getElementById('oppTeam'),'opp');
+
+function readTeam(cls){ return [...document.querySelectorAll('input.'+cls)]
+  .map(i=>findMon(i.value)).filter(Boolean); }
+function bestSTAB(att,defTypes){ return Math.max(...att.types.map(t=>typeEff(t,defTypes))); }
+const cap=s=>s.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+
+function matchup(mine,opp){
+  const myOff=bestSTAB(mine,opp.types);   // mejor efectividad de MIS tipos contra él
+  const thOff=bestSTAB(opp,mine.types);   // mejor efectividad de SUS tipos contra mí
+  let v=0;
+  if(myOff>=2) v+=2; else if(myOff===0) v-=2; else if(myOff<1) v-=1;
+  if(thOff>=2) v-=2; else if(thOff===0) v+=2; else if(thOff<1) v+=1;
+  const fast=mine.stats.speed-opp.stats.speed;
+  if(fast>0) v+=1; else if(fast<0) v-=1;
+  return {v,myOff,thOff,faster:fast>0};
+}
+
+function analyze(){
+  const mine=readTeam('my'), opp=readTeam('opp');
+  const res=document.getElementById('aRes');
+  if(mine.length<1||opp.length<1){
+    res.className='ares show';
+    res.innerHTML='<div class="abloc"><p style="color:var(--muted)">Mete al menos 1 Pokémon en cada equipo (elígelos de la lista para que los reconozca).</p></div>';
+    return;
+  }
+  // matriz y puntuaciones
+  const rows=mine.map(m=>{
+    const cells=opp.map(o=>({o, ...matchup(m,o)}));
+    const total=cells.reduce((a,c)=>a+c.v,0);
+    return {m,cells,total};
+  });
+  // amenazas rivales: cuánto castigan a mi equipo
+  const threats=opp.map(o=>{
+    const beats=mine.filter(m=>matchup(m,o).v<=-2).map(m=>m);
+    const impact=mine.reduce((a,m)=>a-matchup(m,o).v,0);
+    return {o,beats,impact};
+  }).sort((a,b)=>b.impact-a.impact);
+
+  // selección recomendada (4) y leads (2)
+  const ranked=[...rows].sort((a,b)=>b.total-a.total);
+  const pick=ranked.slice(0,Math.min(4,ranked.length));
+  const leads=[...pick].sort((a,b)=>(b.total-a.total)||(b.m.stats.speed-a.m.stats.speed)).slice(0,Math.min(2,pick.length));
+  const leadSet=new Set(leads.map(r=>r.m));
+
+  // contra-pick para cada amenaza
+  function counter(o){ let best=null,bv=-99; mine.forEach(m=>{ const v=matchup(m,o).v; if(v>bv){bv=v;best=m;} }); return {best,bv}; }
+
+  // ---- estrategia textual ----
+  const strat=[];
+  strat.push(`Saca a <b>${pick.map(r=>cap(r.m.name)).join(', ')}</b> — son los que mejor encajan contra su equipo por tipos y velocidad.`);
+  strat.push(`Empieza el combate con <b>${leads.map(r=>cap(r.m.name)).join(' y ')}</b>: tu mejor pareja de inicio.`);
+  threats.slice(0,2).forEach(t=>{
+    if(t.impact<=0) return;
+    const c=counter(t.o);
+    const beatTxt = t.beats.length? `supera a ${t.beats.map(m=>cap(m.name)).join(', ')}` : 'presiona a tu equipo';
+    const cTxt = c.best? ` Enfréntalo con <b>${cap(c.best.name)}</b>${c.bv>=2?' (lo gana por tipos)':''}.` : '';
+    strat.push(`⚠️ Cuidado con <b>${cap(t.o.name)}</b>: ${beatTxt}.${cTxt}`);
+  });
+  const star=ranked[0];
+  if(star&&star.total>0) strat.push(`Tu mejor baza es <b>${cap(star.m.name)}</b>: gana o empata la mayoría de enfrentamientos. Apóyate en él.`);
+  const bench=ranked.slice(4).map(r=>cap(r.m.name));
+  if(bench.length) strat.push(`Probablemente puedes dejar en el banquillo a <b>${bench.join(', ')}</b> en este combate.`);
+
+  // ---- render ----
+  const pickHTML=pick.map(r=>{ const lead=leadSet.has(r.m);
+    return `<div class="pick${lead?' lead':''}">${lead?'<span class="badge2">LEAD</span>':''}
+      <img src="${r.m.img||PLACEHOLDER}" alt=""><span class="pn">${cap(r.m.name)}</span></div>`;}).join('');
+
+  const mcCls=v=>v>=2?'mc-fav':v<=-2?'mc-bad':'mc-neu';
+  const mcTxt=v=>v>=2?'✓':v<=-2?'✕':'~';
+  const matrix=`<div class="matrix"><table><thead><tr><th></th>${opp.map(o=>`<th>${cap(o.name)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>`<tr><th class="mh">${cap(r.m.name)}</th>${r.cells.map(c=>`<td class="mc ${mcCls(c.v)}" title="${cap(r.m.name)} vs ${cap(c.o.name)}">${mcTxt(c.v)}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table></div><p style="font-size:11px;color:var(--muted);margin-top:8px">✓ favorable · ~ neutro · ✕ desfavorable (según tipos y velocidad base)</p>`;
+
+  const threatsHTML=threats.filter(t=>t.impact>0).slice(0,3).map(t=>{ const c=counter(t.o);
+    return `<div class="threat"><img src="${t.o.img||PLACEHOLDER}" alt="">
+      <div class="ti"><b>${cap(t.o.name)}</b> — ${t.beats.length?`vence a ${t.beats.map(m=>cap(m.name)).join(', ')}`:'incómodo para tu equipo'}.
+      ${c.best?`<br>Tu mejor respuesta: <span class="cnt">${cap(c.best.name)}</span>`:''}</div></div>`;}).join('')
+    || '<p style="color:#9be88a;font-size:13px">¡Buenas noticias! Ningún Pokémon rival domina claramente a tu equipo por tipos.</p>';
+
+  res.className='ares show';
+  res.innerHTML=`
+    <div class="abloc"><h4>🎯 Selección recomendada (saca estos 4)</h4><div class="pickrow">${pickHTML}</div></div>
+    <div class="abloc"><h4>🧠 Estrategia a seguir</h4><ul class="strat">${strat.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+    <div class="abloc"><h4>⚠️ Amenazas del rival</h4>${threatsHTML}</div>
+    <div class="abloc"><h4>📊 Matriz de enfrentamientos</h4>${matrix}</div>
+    <p class="calcnote">Recuerda: análisis por tipos/velocidad base. No tiene en cuenta movimientos de cobertura, objetos ni habilidades como Intimidación. Úsalo como guía, no como verdad absoluta.</p>`;
+  res.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+document.getElementById('analyzeBtn').addEventListener('click',analyze);
+
+/* ---------- Tabla de tipos ---------- */
+(function(){
+  const ABBR={normal:"NOR",fire:"FUE",water:"AGU",electric:"ELÉ",grass:"PLA",ice:"HIE",fighting:"LUC",
+    poison:"VEN",ground:"TIE",flying:"VOL",psychic:"PSÍ",bug:"BIC",rock:"ROC",ghost:"FAN",dragon:"DRA",
+    dark:"SIN",steel:"ACE",fairy:"HAD"};
+  let h='<table><thead><tr><th class="corner">ATK \\ DEF</th>';
+  TYPES18.forEach(d=>{ h+=`<th style="background:${TYPE_COLORS[d]}" title="${TYPE_ES[d]}">${ABBR[d]}</th>`; });
+  h+='</tr></thead><tbody>';
+  TYPES18.forEach(atk=>{
+    h+=`<tr><td class="rowh" style="background:${TYPE_COLORS[atk]}" title="${TYPE_ES[atk]}">${TYPE_ES[atk]}</td>`;
+    TYPES18.forEach(def=>{
+      const v=(DATA.chart[def]&&DATA.chart[def][atk]!=null)?DATA.chart[def][atk]:1;
+      let cls='c1',txt='';
+      if(v===2){cls='c2';txt='2';} else if(v===0.5){cls='ch';txt='½';} else if(v===0){cls='c0';txt='0';}
+      h+=`<td class="${cls}" title="${TYPE_ES[atk]} → ${TYPE_ES[def]}: ×${v}">${txt}</td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('typechart').innerHTML=h;
+})();
+</script>
+</body>
+</html>
