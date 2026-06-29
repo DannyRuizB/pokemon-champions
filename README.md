@@ -2,7 +2,7 @@
 
 Guía y herramientas competitivas de **Pokémon Champions**, en una sola página web que **funciona sin conexión** y en **móvil, tablet y PC**.
 
-👉 **Web:** https://dannyruizb.github.io/pokemon-champions/
+👉 **Web:** https://danny-fanprojects.github.io/pokemon-champions/
 
 ## Incluye
 - 🎓 Guía para principiantes
