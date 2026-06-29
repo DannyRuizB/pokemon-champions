@@ -140,6 +140,14 @@
   .mchips{display:flex;flex-wrap:wrap;gap:5px}
   .wb{font-size:10.5px;padding:3px 8px;border-radius:11px;color:#fff;font-weight:700;text-transform:capitalize}
   .wb .mult{font-size:9px;opacity:.85;margin-left:3px}
+  .modal-teams{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .mt-h{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px}
+  .mt-team{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 9px;margin-bottom:7px}
+  .mt-name{font-size:11.5px;color:#cdd6ea;margin-bottom:5px;text-transform:capitalize}
+  .mt-name span{color:var(--muted);text-transform:none}
+  .mt-mons{display:flex;gap:4px;flex-wrap:wrap}
+  .mt-mons img{width:38px;height:38px;object-fit:contain;background:var(--card2);border-radius:6px;cursor:pointer}
+  .mt-mons img.self{box-shadow:0 0 0 2px var(--accent)}
 
   /* tabla de tipos */
   .typechart{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px}
@@ -623,6 +631,18 @@ function openModal(slug,num){
   const mu=matchups(mon.types);
   const chip=(t,v)=>`<span class="wb" style="background:${TYPE_COLORS[t]||'#666'}">${TYPE_ES[t]||t}<span class="mult">${multTxt(v)}</span></span>`;
   const row=(lbl,arr)=> arr.length?`<div class="mrow"><span class="mlbl">${lbl}</span><span class="mchips">${arr.map(([t,v])=>chip(t,v)).join('')}</span></div>`:'';
+  // equipos top que usan este Pokémon
+  const tw=(DATA.teamsDB||[]).filter(t=>t.mons.includes(slug));
+  const spec=slug.split('-')[0];
+  const teamsBlock = tw.length
+    ? `<div class="modal-teams"><div class="mt-h">🏆 Equipos top con ${cap(mon.name)} (${tw.length})</div>`
+      + tw.slice(0,8).map(t=>`<div class="mt-team"><div class="mt-name">${t.n} <span>· ${t.rec}</span></div>
+          <div class="mt-mons">${t.mons.map(s=>{const p=DATA.pokemon[s];
+            return `<img src="${p?p.img:PLACEHOLDER}" title="${cap(p?p.name:s)}" data-slug="${s}" class="${s===slug?'self':''}">`;}).join('')}</div></div>`).join('')
+      + `<p style="font-size:11px;color:var(--muted);margin-top:6px">Equipos reales de torneo (Pikalytics). Toca un Pokémon para ver su ficha.</p></div>`
+    : `<div class="modal-teams"><div class="mt-h">🏆 Equipos top</div>
+        <p style="font-size:12px;color:var(--muted)">No aparece en los equipos destacados que llevamos embebidos. Busca equipos con él en
+        <a href="https://www.pikalytics.com/pokedex/champions/${spec}" target="_blank" rel="noopener">Pikalytics</a>.</p></div>`;
   modal.innerHTML=`<button class="x" onclick="closeModal()">×</button>
     <div class="top"><img src="${mon.img||PLACEHOLDER}" alt="${mon.name}">
       <div><h3>${mon.name.replace(/-/g,' ')}</h3><div class="mnum">#${String(num).padStart(3,'0')}</div>
@@ -631,7 +651,11 @@ function openModal(slug,num){
     <div class="abil">Habilidades: <b>${abilities}</b></div>
     ${rows}
     <div class="total"><span>Total base (BST)</span><b>${bst(mon)}</b></div>
-    <div class="matchups">${row('🔴 Débil a',mu.weak)}${row('🟢 Resiste',mu.res)}${row('⚪ Inmune a',mu.imm)}</div>`;
+    <div class="matchups">${row('🔴 Débil a',mu.weak)}${row('🟢 Resiste',mu.res)}${row('⚪ Inmune a',mu.imm)}</div>
+    ${teamsBlock}`;
+  modal.querySelectorAll('.mt-mons img[data-slug]').forEach(im=>{
+    im.onclick=()=>{ const s=im.dataset.slug; if(DATA.pokemon[s]) openModal(s, DATA.pokemon[s].id); }; });
+  modal.scrollTop=0;
   overlay.classList.add('show'); document.body.style.overflow='hidden';
 }
 function closeModal(){ overlay.classList.remove('show'); document.body.style.overflow=''; }
