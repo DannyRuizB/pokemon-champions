@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Pokédex y mejores equipos de Pokémon Champions — funciona sin internet, en móvil, tablet y PC.">
-<title>Pokédex · Pokémon Champions</title>
+<meta name="description" content="Champions Dex — Pokédex, analizador de equipos, calculadora de daño y tabla de tipos de Pokémon Champions. Gratis y sin conexión, en móvil y PC.">
+<meta name="author" content="Danny Ruiz (@DannyRuizB)">
+<title>Champions Dex · Pokémon Champions</title>
 <style>
   :root{
     --bg:#0f1320; --bg2:#161c2e; --card:#1c2438; --card2:#222c44;
@@ -243,14 +244,18 @@
     .modal img{width:88px;height:88px}
     .stat{grid-template-columns:72px 32px 1fr}
     .mrow .mlbl{min-width:74px}
+    .crow{grid-template-columns:1fr;gap:8px}
+    .vs{padding:2px 0}
+    .advgrid{grid-template-columns:1fr}
+    .pick{width:calc(33.33% - 7px)}
   }
 </style>
 </head>
 <body>
 <header class="hero">
-  <div class="logo">Pokédex no oficial</div>
-  <h1>Pokémon Champions</h1>
-  <p class="sub">Pokédex visual del roster competitivo (Reg. M-B) y los mejores equipos del momento. Funciona sin conexión — toca cualquier Pokémon para ver sus datos.</p>
+  <div class="logo">Proyecto fan · no oficial</div>
+  <h1>Champions Dex</h1>
+  <p class="sub">Tu guía y herramientas competitivas de <b>Pokémon Champions</b>: Pokédex, analizador de equipos, calculadora de daño y tabla de tipos. Gratis, funciona sin conexión y en cualquier dispositivo.</p>
 </header>
 
 <div class="wrap">
@@ -414,8 +419,12 @@
 <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
 
 <footer>
-  Página local hecha con datos públicos · Roster: Game8 · Equipos: Pikalytics · Datos e imágenes: PokéAPI<br>
-  Funciona sin conexión · Pokémon © Nintendo / Game Freak / The Pokémon Company. Proyecto fan sin ánimo de lucro.
+  <div style="font-size:14px;color:var(--txt);margin-bottom:8px">Hecho con ❤️ por <b>Danny Ruiz</b> · <a href="https://github.com/DannyRuizB" target="_blank" rel="noopener">@DannyRuizB</a> · 2026</div>
+  Código, diseño y textos © 2026 Danny Ruiz — bajo licencia
+  <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.es" target="_blank" rel="noopener"><b>CC BY-NC 4.0</b></a>:
+  libre para usar y compartir citando al autor, <b>prohibido cualquier uso comercial</b>.<br>
+  Datos: PokéAPI · Roster: Game8 · Equipos: Pikalytics. Pokémon, sus nombres e imágenes son © Nintendo · Game Freak · The Pokémon Company.<br>
+  Proyecto fan sin ánimo de lucro, sin relación con las empresas anteriores.
 </footer>
 
 <script>

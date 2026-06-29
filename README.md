@@ -1,22 +1,28 @@
-# Pokémon Champions — Pokédex y herramientas
+# 🏆 Champions Dex
 
-Página web local (un solo archivo, funciona sin internet) con:
-- Guía para principiantes
-- Top 5 equipos del meta (Reg. M-B)
-- Analizador de equipos ("¿qué saco?")
-- Calculadora de daño
-- Tabla de tipos
-- Pokédex del roster con fichas (stats, debilidades/resistencias)
+Guía y herramientas competitivas de **Pokémon Champions**, en una sola página web que **funciona sin conexión** y en **móvil, tablet y PC**.
 
-## Archivo listo para usar
-`pokemon-champions.html` — ábrelo con cualquier navegador.
+👉 **Web:** https://dannyruizb.github.io/pokemon-champions/
 
-## Cómo regenerar (datos e imágenes desde PokéAPI)
+## Incluye
+- 🎓 Guía para principiantes
+- 🏅 Top 5 equipos del meta (Reg. M-B)
+- ⚔️ Analizador de equipos ("¿qué saco?") — selección, leads, estrategia y matriz de enfrentamientos
+- 💥 Calculadora de daño (fórmula Gen 9: EVs, naturaleza, objetos, clima...)
+- 📊 Tabla de tipos completa
+- 📖 Pokédex del roster con fichas (stats, debilidades/resistencias)
+
+## Uso offline
+Descarga `pokemon-champions.html` y ábrelo con cualquier navegador. Un solo archivo, sin instalar nada.
+
+## Regenerar datos (opcional)
 Requiere Node.js y `npm install sharp`:
 ```
-node build-data.mjs    # descarga Pokémon + imágenes (webp) -> data.json
-node build-moves.mjs   # añade los movimientos a data.json
-node build-html.mjs    # inyecta data.json en template.html -> pokemon-champions.html
+node build-data.mjs    # Pokémon + imágenes (webp) -> data.json
+node build-moves.mjs   # movimientos -> data.json
+node build-html.mjs    # data.json + template.html -> index.html / pokemon-champions.html
 ```
 
-Datos: PokéAPI · Roster: Game8 · Equipos: Pikalytics. Proyecto fan sin ánimo de lucro.
+## Licencia
+Código, diseño y textos © 2026 Danny Ruiz — **CC BY-NC 4.0** (libre, no comercial). Ver [LICENSE](LICENSE).
+Datos e imágenes de Pokémon © Nintendo · Game Freak · The Pokémon Company (vía PokéAPI). Proyecto fan sin ánimo de lucro.
